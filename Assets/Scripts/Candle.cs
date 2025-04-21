@@ -1,0 +1,127 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Candle : MonoBehaviour
+{
+    //use this to get rotation and movespeed
+    //public GameObject player;
+    //[SerializeField] float currentRotation;
+    //[SerializeField] float prevRotation;
+    //[SerializeField] float rotSpeedDegrees;
+    //[SerializeField] float rotSpeedMeters;
+    //[SerializeField] float heldDistance = 3f;
+    //[SerializeField] float tenUpdatesAgoRotation; //checking speed over longer interval to smooth things out
+    [SerializeField] float xPrevPos;
+    [SerializeField] float yPrevPos;
+    [SerializeField] float zPrevPos;
+    [SerializeField] int callCounter = 0;
+    [SerializeField] int callCounterMajorDecrease = 0;
+    ParticleSystem ps;
+    ParticleSystem.MainModule main;
+    float maxStartLifetime;
+    float maxStartSize;
+    public Light pointLight;
+    float maxIntensity;
+    bool decreaseFlameMajorBeingCalled;
+    GameOverLogic gameOverLogic;
+    
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        ps = GetComponent<ParticleSystem>();
+        main = ps.main;
+        maxStartLifetime = main.startLifetime.constant;
+        maxStartSize = main.startSize.constant;
+        maxIntensity = pointLight.intensity;
+        decreaseFlameMajorBeingCalled = false;
+        gameOverLogic = GameObject.FindGameObjectWithTag("GameOverManager").GetComponent<GameOverLogic>();
+    }
+    void FixedUpdate()
+    {  
+        Transform parent = transform.parent;
+        if (parent != null) {
+            if (callCounter == 0) {
+                float xDiff = parent.position.x-xPrevPos;
+                float yDiff = parent.position.y-yPrevPos;
+                float zDiff = parent.position.z-zPrevPos;
+                xPrevPos = parent.position.x;
+                yPrevPos = parent.position.y;
+                zPrevPos = parent.position.z;
+                float velocity = Mathf.Sqrt(xDiff*xDiff + yDiff*yDiff + zDiff*zDiff)/(10*Time.fixedDeltaTime);
+                //Debug.Log(velocity);
+                if (velocity > 1) decreaseFlameMinor();
+                else increaseFlame(); //need a better check here because this only considers movement, not obstacles
+            }
+            callCounter = (callCounter+1)%10;
+        }
+        else increaseFlame();
+        if (pointLight.intensity <= 0) {
+            gameOverLogic.gameOver();
+        }
+    }
+    public void decreaseFlameMinor() { //need to do checks so that it doesn't go above or below thresholds
+        float currentLifetime = main.startLifetime.constant;
+        float currentSize = main.startSize.constant;
+        if (currentSize > maxStartSize/2) {
+            main.startLifetime = new ParticleSystem.MinMaxCurve(currentLifetime-maxStartLifetime/20);
+            main.startSize = new ParticleSystem.MinMaxCurve(currentSize-maxStartSize/20);
+            pointLight.intensity -= maxIntensity/20;
+        }
+    }
+    public void decreaseFlameMajor() { //need to do checks so that it doesn't go above or below thresholds
+        Debug.Log("Called decrease flame major");
+        if (!decreaseFlameMajorBeingCalled) { //can prolly do this with just counter instead of bool
+            float currentLifetime = main.startLifetime.constant;
+            float currentSize = main.startSize.constant;
+            if (currentSize > 0) {
+                main.startLifetime = new ParticleSystem.MinMaxCurve(currentLifetime-maxStartLifetime/10);
+                main.startSize = new ParticleSystem.MinMaxCurve(currentSize-maxStartSize/10);
+                pointLight.intensity -= maxIntensity/10;
+            }
+            decreaseFlameMajorBeingCalled = true;
+        }
+        callCounterMajorDecrease = (callCounterMajorDecrease+1)%10;
+        if (callCounterMajorDecrease == 0) {
+            decreaseFlameMajorBeingCalled = false;
+        }
+    }
+    public void increaseFlame() { //need to do checks so that it doesn't go above or below thresholds
+        float currentLifetime = main.startLifetime.constant;
+        float currentSize = main.startSize.constant;
+        if (currentSize < maxStartSize) {
+            main.startLifetime = new ParticleSystem.MinMaxCurve(currentLifetime+maxStartLifetime/10);
+            main.startSize = new ParticleSystem.MinMaxCurve(currentSize+maxStartSize/10);
+            pointLight.intensity += maxIntensity/10;
+        }
+    }
+    public void updateCandleRotation()
+    {
+        /*
+        currentRotation = player.transform.rotation.eulerAngles.y;
+        if (callCounter==0) {
+            rotSpeedDegrees = (currentRotation - tenUpdatesAgoRotation)/(10*Time.fixedDeltaTime);
+            rotSpeedMeters = Mathf.PI * heldDistance * rotSpeedDegrees/180;
+            //if i want directional, take orthonormal to currentRotation angle and multiply by this
+            //positive to the right ig
+            float movementDirection = (currentRotation+90)%360*Mathf.PI/180;
+            //this is in radians
+            //x=0,z=3 at 0
+            //x=3,z=0 at 90
+            //x=0,z=-3 at 180
+            //x=-3,z=0 at 270
+            //z horizontal, x vertical axis
+            Vector3 velocity = rotSpeedMeters*new Vector3(Mathf.Sin(movementDirection),0,Mathf.Cos(movementDirection));
+            //make sure to add different particl system settings corresponding to light levels
+            Debug.Log(movementDirection);
+            Debug.Log(velocity);
+            tenUpdatesAgoRotation = currentRotation;
+        }
+        transform.RotateAround(player.transform.position,Vector3.up,currentRotation-prevRotation);
+        prevRotation = currentRotation;
+        callCounter = (callCounter+1)%10;
+        */
+        
+    }
+}
