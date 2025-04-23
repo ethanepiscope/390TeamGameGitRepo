@@ -31,4 +31,6 @@ public class WindowPuzzleTrigger : MonoBehaviour
             if (fixPrompt != null) fixPrompt.SetActive(false);
         }
     }
+
+    
 }

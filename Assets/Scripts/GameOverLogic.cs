@@ -15,13 +15,13 @@ public class GameOverLogic : MonoBehaviour
         pmac = player.GetComponent<PlayerMovementAndCamera>();
     }
 
-    public void restartGame() {
+    public void RestartGame() {
         Debug.Log("Restarting game");
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        pmac.enabled = true;
+        //pmac.enabled = true;
     }
 
-    public void gameOver() {
+    public void GameOver() {
         Debug.Log("Game over");
         gameOverScreen.SetActive(true);
         pmac.enabled = false;

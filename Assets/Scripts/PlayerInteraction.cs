@@ -11,7 +11,10 @@ public class PlayerInteraction : MonoBehaviour
     [SerializeField] private IInteractable currentInteractable=null; 
     [SerializeField] private float playerReach;
     private bool _canDrop = true; 
-    private CinemachineVirtualCamera playerCamera; 
+    private CinemachineVirtualCamera playerCamera;
+    private bool isHiding=false;
+    private bool _canInteract = true;
+
     void Awake()
     {
        playerCamera = GetComponentInChildren<CinemachineVirtualCamera>();
@@ -77,5 +80,11 @@ public class PlayerInteraction : MonoBehaviour
 
     public bool GetCanDrop() => _canDrop; 
 
+    public bool GetIsHiding() => isHiding; 
+
+    public void SetIsHiding(bool set) => isHiding=set; 
     
+    public bool GetCanInteract() => _canInteract; 
+
+    public void SetCanInteract(bool set) => _canInteract = set;
 }

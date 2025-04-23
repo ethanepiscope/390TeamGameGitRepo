@@ -15,7 +15,7 @@ public class Candle : MonoBehaviour
     [SerializeField] float xPrevPos;
     [SerializeField] float yPrevPos;
     [SerializeField] float zPrevPos;
-    [SerializeField] int callCounter = 0;
+    [SerializeField] int callCounterVelocity = 0;
     [SerializeField] int callCounterMajorDecrease = 0;
     ParticleSystem ps;
     ParticleSystem.MainModule main;
@@ -23,8 +23,15 @@ public class Candle : MonoBehaviour
     float maxStartSize;
     public Light pointLight;
     float maxIntensity;
-    bool decreaseFlameMajorBeingCalled;
+    bool decreaseFlameMajorCalled;
     GameOverLogic gameOverLogic;
+    public GameObject wax;
+    Material waxMaterial;
+    Color originalWaxColor;
+    private bool wet;
+    private float velocity;
+    public PlaySFX playsfx;
+    private bool dead;
     
 
     // Start is called before the first frame update
@@ -35,65 +42,77 @@ public class Candle : MonoBehaviour
         maxStartLifetime = main.startLifetime.constant;
         maxStartSize = main.startSize.constant;
         maxIntensity = pointLight.intensity;
-        decreaseFlameMajorBeingCalled = false;
+        decreaseFlameMajorCalled = false;
+        wet = false;
+        velocity = 0;
+        dead = false;
+        waxMaterial = wax.GetComponent<Renderer>().material;
+        originalWaxColor = waxMaterial.GetColor("_EmissionColor");
         gameOverLogic = GameObject.FindGameObjectWithTag("GameOverManager").GetComponent<GameOverLogic>();
     }
     void FixedUpdate()
     {  
+        if (wet) decreaseFlameMajor();
         Transform parent = transform.parent;
-        if (parent != null) {
-            if (callCounter == 0) {
+        if (callCounterVelocity == 0) {
+            if (parent != null) {
                 float xDiff = parent.position.x-xPrevPos;
                 float yDiff = parent.position.y-yPrevPos;
                 float zDiff = parent.position.z-zPrevPos;
                 xPrevPos = parent.position.x;
                 yPrevPos = parent.position.y;
                 zPrevPos = parent.position.z;
-                float velocity = Mathf.Sqrt(xDiff*xDiff + yDiff*yDiff + zDiff*zDiff)/(10*Time.fixedDeltaTime);
-                //Debug.Log(velocity);
-                if (velocity > 1) decreaseFlameMinor();
-                else increaseFlame(); //need a better check here because this only considers movement, not obstacles
+                velocity = Mathf.Sqrt(xDiff*xDiff + yDiff*yDiff + zDiff*zDiff)/(10*Time.fixedDeltaTime);
+                if (!decreaseFlameMajorCalled) {
+                    if (velocity > 1) decreaseFlameMinor();
+                    else increaseFlame();
+                }
             }
-            callCounter = (callCounter+1)%10;
+            else if (!decreaseFlameMajorCalled) {
+                increaseFlame();
+            }
+            decreaseFlameMajorCalled = false;
         }
-        else increaseFlame();
-        if (pointLight.intensity <= 0) {
-            gameOverLogic.gameOver();
+        callCounterVelocity = (callCounterVelocity+1)%10;
+        if (!dead && pointLight.intensity <= 0) {
+            playsfx.PlayAudio();
+            gameOverLogic.GameOver();
+            dead = true;
         }
     }
-    public void decreaseFlameMinor() { //need to do checks so that it doesn't go above or below thresholds
+    public void decreaseFlameMinor() {
         float currentLifetime = main.startLifetime.constant;
         float currentSize = main.startSize.constant;
-        if (currentSize > maxStartSize/2) {
+        if (currentSize > 7*maxStartSize/10 | velocity > 3) {
             main.startLifetime = new ParticleSystem.MinMaxCurve(currentLifetime-maxStartLifetime/20);
             main.startSize = new ParticleSystem.MinMaxCurve(currentSize-maxStartSize/20);
             pointLight.intensity -= maxIntensity/20;
+            waxMaterial.SetColor("_EmissionColor",waxMaterial.GetColor("_EmissionColor")-originalWaxColor/20);
         }
+        else if (currentSize <= maxStartSize/2) increaseFlame();
     }
-    public void decreaseFlameMajor() { //need to do checks so that it doesn't go above or below thresholds
-        Debug.Log("Called decrease flame major");
-        if (!decreaseFlameMajorBeingCalled) { //can prolly do this with just counter instead of bool
+    public void decreaseFlameMajor() {
+        decreaseFlameMajorCalled = true;
+        if (callCounterMajorDecrease == 0) {
             float currentLifetime = main.startLifetime.constant;
             float currentSize = main.startSize.constant;
             if (currentSize > 0) {
                 main.startLifetime = new ParticleSystem.MinMaxCurve(currentLifetime-maxStartLifetime/10);
                 main.startSize = new ParticleSystem.MinMaxCurve(currentSize-maxStartSize/10);
                 pointLight.intensity -= maxIntensity/10;
+                waxMaterial.SetColor("_EmissionColor",waxMaterial.GetColor("_EmissionColor")-originalWaxColor/10);
             }
-            decreaseFlameMajorBeingCalled = true;
         }
         callCounterMajorDecrease = (callCounterMajorDecrease+1)%10;
-        if (callCounterMajorDecrease == 0) {
-            decreaseFlameMajorBeingCalled = false;
-        }
     }
-    public void increaseFlame() { //need to do checks so that it doesn't go above or below thresholds
+    public void increaseFlame() {
         float currentLifetime = main.startLifetime.constant;
         float currentSize = main.startSize.constant;
-        if (currentSize < maxStartSize) {
+        if (currentSize < maxStartSize && currentSize > 0) {
             main.startLifetime = new ParticleSystem.MinMaxCurve(currentLifetime+maxStartLifetime/10);
             main.startSize = new ParticleSystem.MinMaxCurve(currentSize+maxStartSize/10);
             pointLight.intensity += maxIntensity/10;
+            waxMaterial.SetColor("_EmissionColor",waxMaterial.GetColor("_EmissionColor")+originalWaxColor/10);
         }
     }
     public void updateCandleRotation()
@@ -122,6 +141,19 @@ public class Candle : MonoBehaviour
         prevRotation = currentRotation;
         callCounter = (callCounter+1)%10;
         */
-        
     }
+    void OnTriggerEnter(Collider other)
+    {
+      if (other.tag=="WaterHitbox") {
+        wet = true;
+      } 
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+      if (other.tag=="WaterHitbox") {
+        wet = false;
+      } 
+    }
+    
 }

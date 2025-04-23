@@ -13,7 +13,7 @@ public class Holdable : MonoBehaviour
     private PlayerInteraction playerInteraction; 
     private Collider playerCollider; 
     private Collider thisCollider; 
-    private bool isHeld; 
+    public bool isHeld; 
     [Header("Held object position variables")]
     [SerializeField] private bool hasCustomRotation; 
     [SerializeField] private bool hasCustomPosition; 
@@ -50,6 +50,7 @@ public class Holdable : MonoBehaviour
 
     // Picks up item. Called by player, helped by basic interaction script. 
     public void PickUpItem() {
+        if (playerInteraction.GetCanInteract() == false) return; 
         // Check if heldItemContainer already has a holdable child; if so, call drop object on this other held
         Debug.Log("Pick up item called on " + transform.name);
         

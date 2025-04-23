@@ -15,7 +15,7 @@ public class exitGameOverScreen : MonoBehaviour
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.E)) {
-            gameOverLogic.restartGame();
+            gameOverLogic.RestartGame();
         }
     }
 }

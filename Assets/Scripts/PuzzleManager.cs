@@ -8,10 +8,15 @@ public class PuzzleManager : MonoBehaviour
     private bool puzzleSolved = false;
 
     public GameObject solvedText; // This is the "Puzzle Solved! Press X..." UI Text
+    
+    void Awake()
+    {
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+    }
 
     void Start()
     {
-        totalShards = FindObjectsOfType<DraggableShard>().Length;
         if (solvedText != null) solvedText.SetActive(false);
     }
 
@@ -31,7 +36,7 @@ public class PuzzleManager : MonoBehaviour
     {
         if (puzzleSolved && Input.GetKeyDown(KeyCode.X))
         {
-            SceneManager.LoadScene("house");
+            SceneManager.LoadScene("EndScene");
         }
     }
 }

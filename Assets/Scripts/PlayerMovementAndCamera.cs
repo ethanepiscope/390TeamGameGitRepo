@@ -6,7 +6,9 @@ using UnityEngine;
 
 public class PlayerMovementAndCamera : MonoBehaviour
 {
-    [SerializeField] private float playerSpeed=5f;
+    [SerializeField] private float playerSpeed;
+    [SerializeField] private float walkingSpeed; 
+    [SerializeField] private float runningSpeed;
     public float sensX; 
     public float sensY; 
     
@@ -20,7 +22,8 @@ public class PlayerMovementAndCamera : MonoBehaviour
     private CinemachineVirtualCamera playerCamera; 
 
     private AudioSource Audio;
-    private bool canMove = true;  
+    private bool canMove = true; 
+    private bool canMoveCamera = true;  
 
     void Start()
     {
@@ -51,6 +54,10 @@ public class PlayerMovementAndCamera : MonoBehaviour
     void Move() { 
         if (!canMove) return; // Don't want player to be able to hide 
         Vector3 moveDirection = transform.right * horizontalInput + transform.forward * verticalInput;
+
+        // If player is holding down left shift, they are sprinting (higher speed). 
+        if (Input.GetKey(KeyCode.LeftShift)) playerSpeed = runningSpeed;
+        else playerSpeed = walkingSpeed; 
         rb.AddForce(moveDirection.normalized * playerSpeed, ForceMode.Force);
 
         if (moveDirection.magnitude > 0 && !Audio.isPlaying)
@@ -65,7 +72,8 @@ public class PlayerMovementAndCamera : MonoBehaviour
     }
 
     [SerializeField] private float smoothTime = 0.05f; 
-    void SmoothLook(){
+    void SmoothLook() {
+       if (!canMoveCamera) return; 
        float mouseX = Input.GetAxis("Mouse X") * sensX;
        float mouseY = Input.GetAxis("Mouse Y") * sensY;
 
@@ -98,6 +106,9 @@ public class PlayerMovementAndCamera : MonoBehaviour
         canMove = set;
     }
 
+    public void SetCanMoveCamera(bool set) => canMove=set; 
+
+    
 
 }
 

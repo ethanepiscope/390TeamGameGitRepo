@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 1280977547632359675}
   - component: {fileID: 7185944755353367920}
   - component: {fileID: 43302435507179741}
+  - component: {fileID: 1763456780510621549}
   m_Layer: 0
   m_Name: HidingPlace
   m_TagString: Untagged
@@ -138,6 +139,30 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1763456780510621549}
+        m_TargetAssemblyTypeName: DialogueInvoker, Assembly-CSharp
+        m_MethodName: callShowDialogue
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1763456780510621549}
+        m_TargetAssemblyTypeName: DialogueInvoker, Assembly-CSharp
+        m_MethodName: callShowHint
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onHoverExit:
     m_PersistentCalls:
       m_Calls:
@@ -197,6 +222,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   interactionMessage: Hide (E)
+--- !u!114 &1763456780510621549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 699946125328257088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 193dc74e35eb74aa98f5a798eac48fe3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dialogue_hintIndex: 11
+  hintClearIndex: 0
+  delay: 3
 --- !u!1 &4858614793418408822
 GameObject:
   m_ObjectHideFlags: 0

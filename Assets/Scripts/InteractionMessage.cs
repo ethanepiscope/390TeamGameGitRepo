@@ -9,14 +9,16 @@ public class InteractionMessage : MonoBehaviour
     // as OnHover, and clearTextField as an OnHoverExit method 
     [SerializeField] private string interactionMessage; 
     private TextMeshProUGUI interactionTextField; 
-
+    private PlayerInteraction playerInteraction;
     // Finds the text field 
     void Awake() { 
         var interactionTextGO = GameObject.Find("InteractionMessage"); if (interactionTextGO == null) Debug.LogWarning("Interaction message not found");
         interactionTextField = interactionTextGO.GetComponent<TextMeshProUGUI>(); 
+        playerInteraction = FindFirstObjectByType<PlayerInteraction>(); if (playerInteraction==null) Debug.LogWarning("Player interaction null from interaction message");
     }
 
     public void ShowTextField() { 
+        if (playerInteraction.GetCanInteract() == false) return; 
         interactionTextField.text = interactionMessage; 
     }
 

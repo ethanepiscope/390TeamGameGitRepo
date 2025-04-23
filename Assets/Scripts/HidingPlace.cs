@@ -15,6 +15,10 @@ public class HidingPlace : MonoBehaviour
     private InteractionMessage interactionMessage; 
     [SerializeField] private string _whileHidingInteractionMessage;
     [SerializeField] private string _whileNotHidingInteractionMessage;
+    //Ethan adding here
+    private ParticleSystem candleFlame;
+    private Holdable candleHoldable;
+    private GameObject candleModel;
 
     void Awake()
     {
@@ -25,6 +29,11 @@ public class HidingPlace : MonoBehaviour
         interactionMessage = GetComponent<InteractionMessage>(); if (interactionMessage == null) Debug.LogWarning("Interaction message not found on " + transform.name + "; consider adding one."); 
         playerInteraction = GameObject.FindFirstObjectByType<PlayerInteraction>(); 
         if (playerInteraction == null) Debug.Log("Player interaction found null by object " + transform.name);
+        //Ethan adding here:
+        GameObject candle = GameObject.FindGameObjectWithTag("Candle");
+        candleFlame = candle.GetComponent<ParticleSystem>();
+        candleHoldable = candle.GetComponent<Holdable>();
+        candleModel = candle.transform.Find("Candle_3dModel").gameObject;
     }
 
     void Update() => CheckStopHiding();
@@ -44,7 +53,14 @@ public class HidingPlace : MonoBehaviour
         
         // Make sure player cannot move or drop objects (like candles) 
         playerMovementAndCamera.SetCanMove(false);
+        playerMovementAndCamera.SetCanMoveCamera(false);
         playerInteraction.SetCanDrop(false); 
+        playerInteraction.SetIsHiding(true);
+        //Ethan adding code:
+        if (candleHoldable.isHeld) {
+            candleModel.SetActive(false);
+            candleFlame.Stop();
+        }
     }
 
     public void CheckStopHiding() { 
@@ -59,14 +75,23 @@ public class HidingPlace : MonoBehaviour
     }
     public void StopHiding() { 
         Debug.Log("StopHiding called");
-        isHiding = false; 
         hidingCamera.Priority = 0;  
         playerMovementAndCamera.ActivateCamera();
-        playerRenderer.enabled = true; 
         if (interactionMessage!= null) interactionMessage.ChangeInteractionMessage(_whileNotHidingInteractionMessage);
-        playerMovementAndCamera.SetCanMove(true); 
-        playerInteraction.SetCanDrop(true); 
+        StartCoroutine(DelayedReset());
     }
 
+    IEnumerator DelayedReset() { 
+        yield return new WaitForSeconds(0.2f); 
+        isHiding = false;
+        playerMovementAndCamera.SetCanMove(true); 
+        playerMovementAndCamera.SetCanMoveCamera(true);
+        playerInteraction.SetCanDrop(true);
+        playerInteraction.SetIsHiding(false); 
+        yield return new WaitForSeconds(0.6f);
+        playerRenderer.enabled = true;
+        candleModel.SetActive(true);
+        candleFlame.Play();
+    }
     public bool GetIsHiding() => isHiding; 
 }
